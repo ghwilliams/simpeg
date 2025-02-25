@@ -54,8 +54,6 @@ def doi_tdem_1d_layer_CA2012(t, m, survey, std_data, threshold=0.8):
     J = simulation_HM.getJ(m_star).copy()
     J = J["ds"]
 
-    doi, Sj_star, S = doi_1d_layer_CA2012(
-        J, t_star, m_star, std_data, threshold
-    )
+    doi, Sj_star, S = doi_1d_layer_CA2012(J, t_star, m_star, std_data, threshold)
 
     return doi, t_star, m_star, Sj_star, S

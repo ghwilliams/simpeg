@@ -29,7 +29,7 @@ def refine_1d_layer(t, c, M):
     z_max = np.max(z_)
     t_out = np.linspace(0, z_max, M)
     c_out = np.zeros(M)
-    a = 0.
+    a = 0.0
     n = len(c)
     for i in range(n):
         b = z_[i]
@@ -96,9 +96,9 @@ def doi_1d_layer_CA2012(J, t, m, std_data, threshold=0.8):
         Cumulative (from bottom to top) sensitivity.
     """
 
-    J_n = sdiag(1/std_data)*J*sdiag(m)
+    J_n = sdiag(1 / std_data) * J * sdiag(m)
     Sj = abs(J_n).sum(axis=0)
-    Sj_star = Sj[:-1]/t
+    Sj_star = Sj[:-1] / t
     S = np.flip(np.cumsum(Sj[::-1][:-1]))
     active = S - threshold > 0.0
     depth = np.cumsum(t)
