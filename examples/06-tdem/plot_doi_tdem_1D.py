@@ -23,13 +23,27 @@ sigma = 1 / rho
 system = "312"
 
 times_HM = np.r_[
-    4.3641500e-04, 4.5891500e-04, 4.8691500e-04,
-    5.2791500e-04, 5.7891500e-04, 6.2991500e-04,
-    7.0591500e-04, 8.0691500e-04, 9.0791500e-04,
-    1.0344150e-03, 1.2114150e-03, 1.4389150e-03,
-    1.7424150e-03, 2.1214150e-03, 2.5759150e-03,
-    3.1824150e-03, 3.9404150e-03, 4.8494150e-03,
-    5.9604150e-03, 7.2744150e-03, 8.8924150e-03
+    4.3641500e-04,
+    4.5891500e-04,
+    4.8691500e-04,
+    5.2791500e-04,
+    5.7891500e-04,
+    6.2991500e-04,
+    7.0591500e-04,
+    8.0691500e-04,
+    9.0791500e-04,
+    1.0344150e-03,
+    1.2114150e-03,
+    1.4389150e-03,
+    1.7424150e-03,
+    2.1214150e-03,
+    2.5759150e-03,
+    3.1824150e-03,
+    3.9404150e-03,
+    4.8494150e-03,
+    5.9604150e-03,
+    7.2744150e-03,
+    8.8924150e-03,
 ]
 
 skytem_HM = tdem.sources.TrapezoidWaveform(
@@ -53,20 +67,20 @@ receiver_list_HM = [
 ]
 
 source_list_HM = [
-tdem.sources.CircularLoop(
-    receiver_list=receiver_list_HM,
-    location=source_location,
-    waveform=skytem_HM,
-    current=1,
-    radius=source_radius,
-    n_turns=1,
+    tdem.sources.CircularLoop(
+        receiver_list=receiver_list_HM,
+        location=source_location,
+        waveform=skytem_HM,
+        current=1,
+        radius=source_radius,
+        n_turns=1,
     )
 ]
 
 survey_HM = tdem.Survey(source_list_HM)
 
 ##
-# Simulate data in order to create a 'fake' 
+# Simulate data in order to create a 'fake'
 # data error array.
 sigma_map = maps.IdentityMap(nP=len(sigma))
 simulation_HM = tdem.Simulation1DLayered(
@@ -78,11 +92,13 @@ simulation_HM = tdem.Simulation1DLayered(
 dBdT_pred_HM = simulation_HM.dpred(sigma)
 
 # For the normalization, calculate the standard deviation of the data.
-#std_data_HM = np.std(dBdT_pred_HM)
-std_data_HM = 0.05*np.abs(dBdT_pred_HM)
+# std_data_HM = np.std(dBdT_pred_HM)
+std_data_HM = 0.05 * np.abs(dBdT_pred_HM)
 
 threshold = 0.8
-doi, t_star, m_star, Sj_star, S = doi_tdem_1d_layer_CA2012(t, sigma, survey_HM, std_data_HM, threshold)
+doi, t_star, m_star, Sj_star, S = doi_tdem_1d_layer_CA2012(
+    t, sigma, survey_HM, std_data_HM, threshold
+)
 
 # print("Normalized aggregated sensitivity (per layer):")
 print("Depth of Investigation (DOI): {:.2f} m".format(doi))
@@ -90,7 +106,7 @@ print("Depth of Investigation (DOI): {:.2f} m".format(doi))
 ##
 # Plot
 fig, axs = plt.subplots(1, 3, figsize=(8, 6))
-depths = np.r_[0,np.cumsum(t_star)]
+depths = np.r_[0, np.cumsum(t_star)]
 
 y_min = 0.5
 y_max = 500
@@ -98,7 +114,7 @@ y_max = 500
 ##
 # Resistivity model
 axs[0].step(
-    1./m_star,
+    1.0 / m_star,
     depths,
     "k--",
     label="Resistivity",
@@ -127,7 +143,7 @@ axs[1].plot(
 axs[1].set_xlabel("Sensitivity")
 axs[1].set_xscale("log")
 axs[1].set_yscale("log")
-#axs[1].set_xlim(0.01, 1000)
+# axs[1].set_xlim(0.01, 1000)
 axs[1].set_ylim(y_min, y_max)
 axs[1].invert_yaxis()
 
@@ -141,7 +157,7 @@ axs[2].plot(
     markersize=3,
     label="Cumulative sensitivity",
 )
-    
+
 axs[2].axhline(
     doi,
     color="green",
@@ -159,7 +175,7 @@ axs[2].axvline(
 axs[2].set_xlabel("Cumulative Sensitivity")
 axs[2].set_xscale("log")
 axs[2].set_yscale("log")
-#axs[2].set_xlim(0.1, 100)
+# axs[2].set_xlim(0.1, 100)
 axs[2].set_ylim(y_min, y_max)
 axs[2].invert_yaxis()
 
