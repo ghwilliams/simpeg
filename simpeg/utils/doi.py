@@ -95,11 +95,10 @@ def doi_1d_layer_CA2012(J, t, m, std_data, threshold=0.8):
     S : numpy.ndarray, shape (n_layers,)
         Cumulative (from bottom to top) sensitivity.
     """
-
     J_n = sdiag(1 / std_data) * J * sdiag(m)
     Sj = abs(J_n).sum(axis=0)
     Sj_star = Sj[:-1] / t
-    S = np.flip(np.cumsum(Sj[::-1][:-1]))
+    S = np.flip(np.cumsum(Sj_star[::-1]))
     active = S - threshold > 0.0
     depth = np.cumsum(t)
     doi = depth[active].max()
