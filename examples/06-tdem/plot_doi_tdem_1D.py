@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import simpeg.electromagnetics.time_domain as tdem
 from simpeg import maps
 
-from simpeg.electromagnetics.time_domain.doi import doi_tdem_1d_layer_CA2012
+from simpeg.utils import refine_1d_layer, doi_1d_layer_CA2012
 
 ##
 # Set up the conductivity model structure
@@ -82,12 +82,15 @@ survey_HM = tdem.Survey(source_list_HM)
 ##
 # Simulate data in order to create a 'fake'
 # data error array.
-sigma_map = maps.IdentityMap(nP=len(sigma))
+sigma_map = maps.ExpMap(nP=len(sigma))
 simulation_HM = tdem.Simulation1DLayered(
     survey=survey_HM,
     thicknesses=t,
     sigmaMap=sigma_map,
 )
+
+m0 = np.log(sigma)
+
 # Compute the predicted dB/dt data for the current model.
 dBdT_pred_HM = simulation_HM.dpred(sigma)
 
@@ -95,10 +98,23 @@ dBdT_pred_HM = simulation_HM.dpred(sigma)
 # std_data_HM = np.std(dBdT_pred_HM)
 std_data_HM = 0.05 * np.abs(dBdT_pred_HM)
 
-threshold = 0.8
-doi, t_star, m_star, Sj_star, S = doi_tdem_1d_layer_CA2012(
-    t, sigma, survey_HM, std_data_HM, threshold
+##
+# Setup the sensitivity matrix for computing DOI.
+t_star, m_star = refine_1d_layer(t, m0, 100)
+sigma_map_J = maps.ExpMap(nP=len(m_star))
+simulation_HM_J = tdem.Simulation1DLayered(
+    survey=survey_HM,
+    thicknesses=t_star,
+    sigmaMap=sigma_map_J,
 )
+
+J = simulation_HM_J.getJ(m_star).copy()
+J = J["ds"]
+
+threshold = 0.8
+doi, Sj_star = doi_1d_layer_CA2012(J, t_star, std_data_HM, threshold)
+
+S = np.flip(np.cumsum(Sj_star[::-1]))
 
 # print("Normalized aggregated sensitivity (per layer):")
 print("Depth of Investigation (DOI): {:.2f} m".format(doi))

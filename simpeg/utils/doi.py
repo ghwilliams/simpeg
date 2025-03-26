@@ -39,7 +39,7 @@ def refine_1d_layer(t, c, M):
     return np.diff(t_out), c_out
 
 
-def doi_1d_layer_CA2012(J, t, m, std_data, threshold=0.8):
+def doi_1d_layer_CA2012(J, t, std_data, threshold=0.8):
     r"""Compute the depth of investigation for a layered half space.
 
     Compute the cumulative sensitivity and determine the
@@ -74,9 +74,6 @@ def doi_1d_layer_CA2012(J, t, m, std_data, threshold=0.8):
     thicknesses : array-like, shape (n_layers,)
         The thickness of each layer in meters.
 
-    m : array-like, shape (n_layers,)
-        Conductivity model with values for each layer thickness
-
     std_data : array-like or scalar
         The standard deviation(s) of data points. If array-like, it should
         have shape (n_data,).
@@ -95,7 +92,7 @@ def doi_1d_layer_CA2012(J, t, m, std_data, threshold=0.8):
     S : numpy.ndarray, shape (n_layers,)
         Cumulative (from bottom to top) sensitivity.
     """
-    J_n = sdiag(1 / std_data) * J * sdiag(m)
+    J_n = sdiag(1 / std_data) * J
     Sj = abs(J_n).sum(axis=0)
     Sj_star = Sj[:-1] / t
     S = np.flip(np.cumsum(Sj_star[::-1]))
@@ -103,4 +100,4 @@ def doi_1d_layer_CA2012(J, t, m, std_data, threshold=0.8):
     depth = np.cumsum(t)
     doi = depth[active].max()
 
-    return doi, Sj_star, S
+    return doi, Sj_star

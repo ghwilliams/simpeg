@@ -106,13 +106,6 @@ Base Classes
   fields.FieldsDerivativesEB
   fields.FieldsDerivativesHJ
 
-DOI subroutines
-===============
-
-.. autosummary::
-  :toctree: generated/
-
-  doi.doi_tdem_1d_layer_CA2012
 """
 
 from .simulation import (
@@ -134,7 +127,3 @@ from . import receivers
 
 from . import sources as Src
 from . import receivers as Rx
-
-from .doi import (
-    doi_tdem_1d_layer_CA2012,
-)

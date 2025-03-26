@@ -301,6 +301,6 @@ from .coord_utils import (
     rotationMatrixFromNormals,
 )
 from .doi import (
-  refine_1d_layer,
-  doi_1d_layer_CA2012,
+    refine_1d_layer,
+    doi_1d_layer_CA2012,
 )

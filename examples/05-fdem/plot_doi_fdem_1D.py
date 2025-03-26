@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import simpeg.electromagnetics.frequency_domain as fdem
 from simpeg import maps
 
-from simpeg.electromagnetics.frequency_domain.doi import doi_fdem_1d_layer_CA2012
+from simpeg.utils import refine_1d_layer, doi_1d_layer_CA2012
 
 ##
 # Set up the conductivity model structure
@@ -71,12 +71,14 @@ survey = fdem.survey.Survey(source_list)
 ##
 # Simulate data in order to create a 'fake'
 # data error array.
-sigma_map = maps.IdentityMap(nP=len(sigma))
+sigma_map = maps.ExpMap(nP=len(sigma))
 simulation = fdem.Simulation1DLayered(
     survey=survey,
     thicknesses=t,
     sigmaMap=sigma_map,
 )
+
+m0 = np.log(sigma)
 
 # Compute the predicted dB/dt data for the current model.
 dpred = simulation.dpred(sigma)
@@ -84,10 +86,23 @@ dpred = simulation.dpred(sigma)
 # For the normalization, calculate the standard deviation of the data.
 std_data = 0.05 * np.abs(dpred)
 
-threshold = 0.8
-doi, t_star, m_star, Sj_star, S = doi_fdem_1d_layer_CA2012(
-    t, sigma, survey, std_data, threshold
+##
+# Setup the sensitivity matrix for computing DOI.
+t_star, m_star = refine_1d_layer(t, m0, 100)
+sigma_map_J = maps.ExpMap(nP=len(m_star))
+simulation_HM_J = fdem.Simulation1DLayered(
+    survey=survey,
+    thicknesses=t_star,
+    sigmaMap=sigma_map_J,
 )
+
+J = simulation_HM_J.getJ(m_star).copy()
+J = J["ds"]
+
+threshold = 0.8
+doi, Sj_star = doi_1d_layer_CA2012(J, t_star, std_data, threshold)
+
+S = np.flip(np.cumsum(Sj_star[::-1]))
 
 # print("Normalized aggregated sensitivity (per layer):")
 print("Depth of Investigation (DOI): {:.2f} m".format(doi))
