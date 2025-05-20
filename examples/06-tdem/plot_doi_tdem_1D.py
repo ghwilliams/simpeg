@@ -12,10 +12,10 @@ from simpeg.utils import refine_1d_layer, doi_1d_layer_CA2012
 ##
 # Set up the conductivity model structure
 #
-depths = np.atleast_1d([0, 2, 6, 19, 55, 180])
+depths = np.atleast_1d([0, 2, 6, 19, 55, 180, 200])
 t = np.diff(depths)
-rho = np.atleast_1d([50, 500, 10, 45, 500, 5])
-sigma = 1 / rho
+rho = np.atleast_1d([50, 500, 10, 45, 500, 5, 5])
+sigma = 1./rho
 
 ##
 # Define survey parameters.
@@ -100,19 +100,22 @@ std_data_HM = 0.05 * np.abs(dBdT_pred_HM)
 
 ##
 # Setup the sensitivity matrix for computing DOI.
-t_star, m_star = refine_1d_layer(t, m0, 100)
-sigma_map_J = maps.ExpMap(nP=len(m_star))
+t_in = t
+m_in = m0[:-1]
+t_star, m_star = refine_1d_layer(t_in, m_in, 10)
+t_out = t_star[:-1]
+m_out = m_star
+sigma_map_J = maps.ExpMap(nP=len(m_out))
 simulation_HM_J = tdem.Simulation1DLayered(
     survey=survey_HM,
-    thicknesses=t_star,
+    thicknesses=t_out,
     sigmaMap=sigma_map_J,
 )
 
-J = simulation_HM_J.getJ(m_star).copy()
-J = J["ds"]
+J = simulation_HM_J.getJ(m_out).copy()
 
 threshold = 0.8
-doi, Sj_star = doi_1d_layer_CA2012(J, t_star, std_data_HM, threshold)
+doi, Sj_star = doi_1d_layer_CA2012(J, t_out, std_data_HM, threshold)
 
 S = np.flip(np.cumsum(Sj_star[::-1]))
 
@@ -122,7 +125,7 @@ print("Depth of Investigation (DOI): {:.2f} m".format(doi))
 ##
 # Plot
 fig, axs = plt.subplots(1, 3, figsize=(8, 6))
-depths = np.r_[0, np.cumsum(t_star)]
+depths = np.r_[0, np.cumsum(t_out)]
 
 y_min = 0.5
 y_max = 500
@@ -130,7 +133,7 @@ y_max = 500
 ##
 # Resistivity model
 axs[0].step(
-    1.0 / m_star,
+    1.0 / m_out,
     depths,
     "k--",
     label="Resistivity",

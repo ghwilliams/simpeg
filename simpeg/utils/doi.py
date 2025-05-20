@@ -15,7 +15,7 @@ def refine_1d_layer(t, c, M):
     c : numpy.ndarray
         Input layers physical properties.
     M : Integer
-        The number of layers in the refined model.
+        The number of subdivisions per layer.
 
     Returns
     -------
@@ -24,19 +24,15 @@ def refine_1d_layer(t, c, M):
     c_out : numpy.ndarray
         Refined layers physical properties.
     """
-    t_ = np.r_[t, t[-1]]
-    z_ = np.r_[np.cumsum(t_)]
-    z_max = np.max(z_)
-    t_out = np.linspace(0, z_max, M)
-    c_out = np.zeros(M)
-    a = 0.0
-    n = len(c)
-    for i in range(n):
-        b = z_[i]
-        c_out[(t_out >= a) & (t_out <= b)] = c[i]
-        a = b
+    t_out = []
+    rho_out = []
 
-    return np.diff(t_out), c_out
+    for thick, cond in zip(t, c):
+        sub_thickness = thick / M
+        t_out.extend([sub_thickness] * M)
+        rho_out.extend([cond] * M)
+
+    return np.array(t_out), np.array(rho_out)
 
 
 def doi_1d_layer_CA2012(J, t, std_data, threshold=0.8):
