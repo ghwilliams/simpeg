@@ -15,7 +15,7 @@ from simpeg.utils import refine_1d_layer, doi_1d_layer_CA2012
 depths = np.atleast_1d([0, 2, 6, 19, 55, 180, 200])
 t = np.diff(depths)
 rho = np.atleast_1d([50, 500, 10, 45, 500, 5, 5])
-sigma = 1./rho
+sigma = 1.0 / rho
 
 ##
 # Define survey parameters.
